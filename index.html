@@ -107,6 +107,7 @@
             }
 
             const container = document.getElementById('signature-container');
+            container.innerHTML = '';
             container.innerHTML = svgText;
             await setTheme()
             if (mode == 'animation') {
