@@ -131,7 +131,6 @@
                         name3 = animatePath(blockList.slice(14))
                     }
                 })
-                setTimeout(()=>{container.innerHTML = ''}, totalDuration + 900)
             }
         }
         function animatePath(paths, delayLength = null) {
@@ -143,8 +142,10 @@
             paths.forEach((path, index) => {
                 let length = path.getTotalLength();
                 let duration = delayLength != null ? totalDuration / 96 * length : (length / totalLength) * totalDuration
+                path.style.transition = 'none';
                 path.style.strokeDasharray = length;
                 path.style.strokeDashoffset = length;
+                path.getBoundingClientRect();
 
                 const animation = path.animate(
                     [
