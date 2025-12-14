@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NK</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            height: 100vh;
+        }
+
+        svg {
+            max-width: 90vmin;
+            max-height: 90vmin;
+        }
+
+        button,
+        input {
+            width: 84px;
+        }
+
+        #signature-container {
+            max-width: 90vmin;
+            max-height: 90vmin;
+            border-radius: 12px;
+        }
+
+        #input-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="signature-container">
+    </div>
+    <div id="input-container">
+        <button id="themeButton">light</button>
+        <button id="modeButton">static</button>
+        <input id="durationInput" type="number" min="0" step="100">
+    </div>
+    <script>
+        let theme = "dark"
+        let mode = "static"
+        let svgText = null
+        let timeInterval = null
+        let totalDuration = 2002
+
+        const themeButton = document.getElementById('themeButton');
+        const modeButton = document.getElementById('modeButton');
+        const inputElement = document.getElementById('durationInput');
+
+        inputElement.addEventListener('input', (event) => {
+            inputDuration = event.target.valueAsNumber;
+            if (isNaN(inputDuration)) {
+                totalDuration = 0;
+            }
+            else {
+                totalDuration = inputDuration
+            }
+            resetInterval()
+        });
+
+        themeButton.addEventListener('click', function () {
+            theme = theme == 'light' ? 'dark' : 'light'
+            themeButton.textContent = theme
+            setTheme()
+        });
+        function resetInterval() {
+            clearInterval(timeInterval)
+            loadAndAnimateSignature()
+            timeInterval = setInterval(loadAndAnimateSignature, totalDuration + 1000);
+        }
+        modeButton.addEventListener('click', function () {
+            mode = mode == 'animation' ? 'static' : 'animation'
+            modeButton.textContent = mode
+            resetInterval()
+        });
+        async function setTheme() {
+            let backgroundColor = theme == "light" ? "#ffffff" : "#000000"
+            let pathColor = theme == "light" ? "#000000" : "#ffffff"
+
+            let backgroundElement = document.querySelector('#signature-container')
+            let bodyElement = document.querySelector('body')
+
+            backgroundElement.style.backgroundColor = backgroundColor
+            bodyElement.style.backgroundColor = pathColor
+
+            const pathList = Array.from(document.querySelectorAll('path'));
+            pathList.forEach((path, index) => {
+                path.style.stroke = pathColor
+            })
+        }
+        async function loadAndAnimateSignature() {
+            if (svgText == null) {
+                const response = await fetch('nk.svg');
+                svgText = await response.text();
+            }
+
+            const container = document.getElementById('signature-container');
+            container.innerHTML = svgText;
+            await setTheme()
+            if (mode == 'animation') {
+                const layers = Array.from(document.querySelectorAll('g'))
+                layers.forEach((layer, index) => {
+                    const blockList = Array.from(layer.querySelectorAll('path'));
+                    if (index == 0) {
+                        tetris1 = animatePath(blockList.slice(0, -14), delayLength = 0)
+                        tetris2 = animatePath(blockList.slice(-14, -10), delayLength = 48)
+                        tetris3 = animatePath(blockList.slice(-10), delayLength = 72)
+                    }
+                    else if (index == 1) {
+                        signature_line = animatePath(blockList.slice(-1))
+                        signature_n = animatePath(blockList.slice(0, 2))
+                        signature_k = animatePath(blockList.slice(2, 3))
+                        signature_h = animatePath(blockList.slice(3, 4))
+                        signature_a = animatePath(blockList.slice(4, -1))
+                    }
+                    else {
+                        name1 = animatePath(blockList.slice(0, 6))
+                        name2 = animatePath(blockList.slice(6, 14))
+                        name3 = animatePath(blockList.slice(14))
+                    }
+
+                })
+            }
+        }
+        function animatePath(paths, delayLength = null) {
+            let currentDelay = 0;
+            let totalLength = 0
+            paths.forEach((path, index) => {
+                totalLength += path.getTotalLength()
+            })
+            paths.forEach((path, index) => {
+                let length = path.getTotalLength();
+                let duration = delayLength != null ? totalDuration / 96 * length : (length / totalLength) * totalDuration
+                path.style.strokeDasharray = length;
+                path.style.strokeDashoffset = length;
+
+                const animation = path.animate(
+                    [
+                        { strokeDashoffset: length },
+                        { strokeDashoffset: 0 }
+                    ],
+                    {
+                        duration: duration,
+                        delay: delayLength != null ? delayLength / 96 * totalDuration : currentDelay,
+                        fill: 'forwards',
+                        easing: 'ease-in-out'
+                    }
+                );
+                currentDelay += duration;
+            });
+            return totalLength
+        }
+        themeButton.click()
+        modeButton.click()
+        inputElement.value = totalDuration
+    </script>
+</body>
+
+</html>
