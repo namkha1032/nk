@@ -102,7 +102,7 @@
         }
         async function loadAndAnimateSignature() {
             if (svgText == null) {
-                const response = await fetch('nk.svg');
+                const response = await fetch('nk_plain.svg');
                 svgText = await response.text();
             }
 
@@ -142,10 +142,10 @@
             paths.forEach((path, index) => {
                 let length = path.getTotalLength();
                 let duration = delayLength != null ? totalDuration / 96 * length : (length / totalLength) * totalDuration
-                path.style.transition = 'none';
+                // path.style.transition = 'none';
                 path.style.strokeDasharray = length;
                 path.style.strokeDashoffset = length;
-                path.getBoundingClientRect();
+                // path.getBoundingClientRect();
 
                 const animation = path.animate(
                     [
